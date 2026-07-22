@@ -1,0 +1,702 @@
+﻿html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex Job Hunter — Assistente de Busca de Vagas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#171b22;
+    --paper:#FBF9F4;
+    --paper-raised:#ffffff;
+    --slate:#5b6472;
+    --hairline:#E4DFD3;
+    --amber:#C7801A;
+    --amber-deep:#9c650f;
+    --success:#2F7B4F;
+    --danger:#B23B3B;
+    --tab-inactive:#EFEBE1;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header.masthead{
+    border-bottom:2px solid var(--ink);
+    padding:28px clamp(20px,5vw,64px) 20px;
+  }
+  .masthead-inner{
+    max-width:1040px;
+    margin:0 auto;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .brand{
+    font-family:'Fraunces',serif;
+    font-size:clamp(26px,3.4vw,34px);
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .brand em{
+    font-style:normal;
+    color:var(--amber-deep);
+  }
+  .tagline{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--slate);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  main{
+    max-width:1040px;
+    margin:0 auto;
+    padding:32px clamp(20px,5vw,64px) 80px;
+  }
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    margin-bottom:0;
+  }
+  .nav-btn{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:0.03em;
+    background:var(--tab-inactive);
+    border:1px solid var(--hairline);
+    border-bottom:none;
+    color:var(--slate);
+    padding:11px 18px 10px;
+    cursor:pointer;
+    border-radius:var(--radius) var(--radius) 0 0;
+    position:relative;
+    top:1px;
+  }
+  .nav-btn .num{ color:var(--amber-deep); margin-right:6px; }
+  .nav-btn.active{
+    background:var(--paper-raised);
+    color:var(--ink);
+    border-color:var(--ink);
+    border-bottom:1px solid var(--paper-raised);
+    font-weight:500;
+  }
+  .doc{
+    background:var(--paper-raised);
+    border:1px solid var(--ink);
+    padding:clamp(20px,4vw,40px);
+    box-shadow:0 1px 0 var(--hairline);
+  }
+  .tab-content{ display:none; animation:fade .25s ease; }
+  .tab-content.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(2px);} to{opacity:1; transform:none;} }
+
+  h2.step-title{
+    font-family:'Fraunces',serif;
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  p.step-desc{
+    color:var(--slate);
+    font-size:14px;
+    margin:0 0 24px;
+  }
+  label{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--slate);
+    margin-bottom:6px;
+  }
+  .field{ margin-bottom:18px; }
+  input[type="text"], input[type="number"], textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    padding:11px 12px;
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  textarea{ min-height:130px; resize:vertical; }
+  textarea.mono, .job-info textarea{ font-family:'JetBrains Mono',monospace; font-size:13px; }
+  input:focus, textarea:focus{
+    outline:2px solid var(--amber);
+    outline-offset:1px;
+    border-color:var(--amber);
+  }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; margin-bottom:18px; }
+  .checkbox-row input{ width:16px; height:16px; }
+  .checkbox-row label{ margin:0; text-transform:none; font-size:14px; letter-spacing:0; color:var(--ink); }
+
+  button.primary{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    letter-spacing:0.03em;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:13px 22px;
+    cursor:pointer;
+    border-radius:var(--radius);
+    transition:background .15s ease;
+  }
+  button.primary:hover{ background:var(--amber-deep); }
+
+  #loading{
+    margin-top:18px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--amber-deep);
+  }
+  #loading.hidden{ display:none; }
+
+  .result-box{
+    margin-top:24px;
+    border-top:1px dashed var(--hairline);
+    padding-top:20px;
+  }
+  .result-box.hidden{ display:none; }
+  .result-box h3{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--slate);
+    margin:0 0 10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .copy-btn{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    background:none;
+    border:1px solid var(--hairline);
+    color:var(--slate);
+    padding:4px 9px;
+    cursor:pointer;
+    border-radius:var(--radius);
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .copy-btn:hover{ border-color:var(--ink); color:var(--ink); }
+  pre{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    line-height:1.55;
+    background:var(--paper);
+    border:1px solid var(--hairline);
+    padding:16px;
+    border-radius:var(--radius);
+    overflow-x:auto;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  #letter-content, #tailor-content{
+    font-family:'Fraunces',serif;
+    font-size:15px;
+    line-height:1.7;
+    background:var(--paper);
+    border:1px solid var(--hairline);
+    padding:24px;
+    border-radius:var(--radius);
+    white-space:pre-wrap;
+  }
+  footer{
+    text-align:center;
+    padding:24px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--slate);
+  }
+  @media (max-width:640px){
+    .grid-2{ grid-template-columns:1fr; }
+    .nav-btn{ font-size:11px; padding:9px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">Alex <em>Job Hunter</em></div>
+    <div class="tagline">Dossiê de busca de vagas — Nº 001</div>
+  </div>
+</header>
+
+<main>
+  <nav class="tabs">
+    <button class="nav-btn active" data-tab="resume"><span class="num">01</span>Currículo</button>
+    <button class="nav-btn" data-tab="jobs"><span class="num">02</span>Vagas</button>
+    <button class="nav-btn" data-tab="interview"><span class="num">03</span>Entrevista</button>
+    <button class="nav-btn" data-tab="letter"><span class="num">04</span>Carta</button>
+    <button class="nav-btn" data-tab="tailor"><span class="num">05</span>Currículo p/ Vaga</button>
+    <button class="nav-btn" data-tab="message"><span class="num">06</span>Mensagem</button>
+    <button class="nav-btn" data-tab="saved"><span class="num">07</span>Salvos</button>
+  </nav>
+
+  <div class="doc">
+
+    <section id="resume" class="tab-content active">
+      <h2 class="step-title">Análise de currículo</h2>
+      <p class="step-desc">Cole o texto do seu currículo para extrair habilidades, anos de experiência e nível de senioridade.</p>
+
+      <div class="field">
+        <label for="resume-text">Texto do currículo</label>
+        <textarea id="resume-text" placeholder="Cole aqui o texto do seu currículo..."></textarea>
+      </div>
+
+      <button class="primary" onclick="analyzeResume()">Analisar currículo</button>
+
+      <div id="resume-result" class="result-box hidden">
+        <h3>Perfil extraído <button class="copy-btn" onclick="copyToClipboard('resume-content')">Copiar</button></h3>
+        <pre id="resume-content"></pre>
+      </div>
+    </section>
+
+    <section id="jobs" class="tab-content">
+      <h2 class="step-title">Busca de vagas</h2>
+      <p class="step-desc">Informe suas habilidades e palavras-chave para encontrar as vagas com melhor compatibilidade.</p>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="skills">Suas habilidades (separadas por vírgula)</label>
+          <input type="text" id="skills" placeholder="Python, React, AWS">
+        </div>
+        <div class="field">
+          <label for="experience">Anos de experiência</label>
+          <input type="number" id="experience" min="0" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="keywords">Palavras-chave da vaga (separadas por vírgula)</label>
+        <input type="text" id="keywords" placeholder="Desenvolvedor Backend, Engenheiro de Dados">
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="location">Localização (opcional)</label>
+          <input type="text" id="location" placeholder="São Paulo, SP">
+        </div>
+        <div class="field">
+          <label for="top-n">Quantidade de resultados</label>
+          <input type="number" id="top-n" min="1" max="20" value="5">
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="remote">
+        <label for="remote">Apenas vagas remotas</label>
+      </div>
+
+      <button class="primary" onclick="searchJobs()">Buscar vagas</button>
+
+      <div id="jobs-result" class="result-box hidden">
+        <h3>Vagas encontradas <button class="copy-btn" onclick="copyToClipboard('jobs-content')">Copiar</button></h3>
+        <pre id="jobs-content"></pre>
+      </div>
+    </section>
+
+    <section id="interview" class="tab-content">
+      <h2 class="step-title">Preparação para entrevista</h2>
+      <p class="step-desc">Informe a vaga e seu perfil (em JSON) para gerar perguntas prováveis e dicas de preparação.</p>
+
+      <div class="field job-info">
+        <label for="job-info">Informações da vaga (JSON)</label>
+        <textarea id="job-info" class="mono" placeholder='{"title": "Desenvolvedor Backend", "company": "Nimbus Tech", "required_skills": ["Python", "AWS"]}'></textarea>
+      </div>
+
+      <div class="field job-info">
+        <label for="candidate-info-interview">Seu perfil (JSON)</label>
+        <textarea id="candidate-info-interview" class="mono" placeholder='{"skills": ["Python", "SQL"], "years_experience": 3}'></textarea>
+      </div>
+
+      <button class="primary" onclick="prepareInterview()">Gerar preparação</button>
+
+      <div id="interview-result" class="result-box hidden">
+        <h3>Preparação sugerida <button class="copy-btn" onclick="copyToClipboard('interview-content')">Copiar</button></h3>
+        <pre id="interview-content"></pre>
+      </div>
+    </section>
+
+    <section id="letter" class="tab-content">
+      <h2 class="step-title">Carta de apresentação</h2>
+      <p class="step-desc">Informe seu perfil e a vaga (em JSON) para gerar uma carta de apresentação personalizada.</p>
+
+      <div class="field job-info">
+        <label for="candidate-info-letter">Seu perfil (JSON)</label>
+        <textarea id="candidate-info-letter" class="mono" placeholder='{"name": "Maria Silva", "skills": ["Python", "SQL"], "years_experience": 3}'></textarea>
+      </div>
+
+      <div class="field job-info">
+        <label for="job-info-letter">Informações da vaga (JSON)</label>
+        <textarea id="job-info-letter" class="mono" placeholder='{"title": "Desenvolvedor Backend", "company": "Nimbus Tech"}'></textarea>
+      </div>
+
+      <button class="primary" onclick="generateCoverLetter()">Gerar carta</button>
+
+      <div id="letter-result" class="result-box hidden">
+        <h3>Carta gerada <button class="copy-btn" onclick="copyToClipboard('letter-content')">Copiar</button></h3>
+        <div id="letter-content"></div>
+      </div>
+    </section>
+
+    <section id="tailor" class="tab-content">
+      <h2 class="step-title">Currículo compatível com a vaga</h2>
+      <p class="step-desc">Informe seu perfil e a vaga (em JSON) para gerar um currículo com as habilidades compatíveis destacadas primeiro.</p>
+
+      <div class="field job-info">
+        <label for="candidate-info-tailor">Seu perfil (JSON)</label>
+        <textarea id="candidate-info-tailor" class="mono" placeholder='{"name": "Maria Silva", "contact": "maria@email.com", "skills": ["Python", "SQL", "AWS"], "years_experience": 3, "experience": ["Analista de Dados na Empresa X (2022-2024)"], "education": ["Bacharelado em Ciência da Computação"]}'></textarea>
+      </div>
+
+      <div class="field job-info">
+        <label for="job-info-tailor">Informações da vaga (JSON)</label>
+        <textarea id="job-info-tailor" class="mono" placeholder='{"title": "Desenvolvedor Backend", "company": "Nimbus Tech", "required_skills": ["Python", "AWS", "Docker"]}'></textarea>
+      </div>
+
+      <button class="primary" onclick="generateTailoredResume()">Gerar currículo</button>
+
+      <div id="tailor-result" class="result-box hidden">
+        <h3>Currículo gerado <button class="copy-btn" onclick="copyToClipboard('tailor-content')">Copiar</button></h3>
+        <div id="tailor-content"></div>
+      </div>
+    </section>
+
+    <section id="message" class="tab-content">
+      <h2 class="step-title">Mensagem para o recrutador</h2>
+      <p class="step-desc">Gera uma mensagem curta e informal, pronta para enviar no LinkedIn ou WhatsApp.</p>
+
+      <div class="field job-info">
+        <label for="candidate-info-message">Seu perfil (JSON)</label>
+        <textarea id="candidate-info-message" class="mono" placeholder='{"name": "Maria Silva", "skills": ["Python", "AWS"], "years_experience": 5}'></textarea>
+      </div>
+
+      <div class="field job-info">
+        <label for="job-info-message">Informações da vaga (JSON)</label>
+        <textarea id="job-info-message" class="mono" placeholder='{"title": "Desenvolvedor Backend", "company": "Nimbus Tech", "required_skills": ["Python", "AWS"]}'></textarea>
+      </div>
+
+      <button class="primary" onclick="generateRecruiterMessage()">Gerar mensagem</button>
+
+      <div id="message-result" class="result-box hidden">
+        <h3>Mensagem gerada <button class="copy-btn" onclick="copyToClipboard('message-content')">Copiar</button></h3>
+        <div id="message-content"></div>
+      </div>
+    </section>
+
+    <section id="saved" class="tab-content">
+      <h2 class="step-title">Candidaturas salvas</h2>
+      <p class="step-desc">Guarde vagas, currículos e cartas geradas para acompanhar suas candidaturas.</p>
+
+      <div class="field job-info">
+        <label for="save-job-info">Informações da vaga (JSON)</label>
+        <textarea id="save-job-info" class="mono" placeholder='{"title": "Desenvolvedor Backend", "company": "Nimbus Tech"}'></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="save-match-score">% de aderência (opcional)</label>
+          <input type="number" id="save-match-score" min="0" max="100" placeholder="80">
+        </div>
+        <div class="field">
+          <label for="save-notes">Notas (opcional)</label>
+          <input type="text" id="save-notes" placeholder="Enviei em 22/07, aguardando retorno">
+        </div>
+      </div>
+
+      <button class="primary" onclick="saveApplication()">Salvar candidatura</button>
+      <button class="copy-btn" style="margin-left:10px;" onclick="loadApplications()">🔄 Atualizar lista</button>
+
+      <div id="saved-list" class="result-box"></div>
+    </section>
+
+    <div id="loading" class="hidden">Processando…</div>
+  </div>
+</main>
+
+<footer>Alex Job Hunter — assistente de demonstração, dados de vagas simulados.</footer>
+
+<script>
+const API_BASE = '/api';
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        btn.classList.add('active');
+    });
+});
+
+function showLoading() { document.getElementById('loading').classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+
+function displayResult(resultBoxId, contentId, data) {
+    const resultBox = document.getElementById(resultBoxId);
+    const content = document.getElementById(contentId);
+    content.textContent = JSON.stringify(data, null, 2);
+    resultBox.classList.remove('hidden');
+}
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent || element.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Copiado para a área de transferência!');
+    }).catch(err => {
+        alert('❌ Erro ao copiar: ' + err);
+    });
+}
+
+async function analyzeResume() {
+    const resumeText = document.getElementById('resume-text').value.trim();
+    if (!resumeText) { alert('⚠️ Por favor, cole seu currículo'); return; }
+    showLoading();
+    try {
+        const response = await fetch(`${API_BASE}/analyze-resume`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resume_text: resumeText })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        const data = await response.json();
+        displayResult('resume-result', 'resume-content', data.profile);
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function searchJobs() {
+    const skillsText = document.getElementById('skills').value.trim();
+    const experience = parseInt(document.getElementById('experience').value);
+    const keywords = document.getElementById('keywords').value.trim();
+    const location = document.getElementById('location').value.trim() || null;
+    const remote = document.getElementById('remote').checked;
+    const topN = parseInt(document.getElementById('top-n').value);
+
+    if (!keywords) { alert('⚠️ Por favor, digite palavras-chave para buscar'); return; }
+
+    const skills = skillsText.split(',').map(s => s.trim()).filter(s => s);
+    const keywordsList = keywords.split(',').map(k => k.trim()).filter(k => k);
+    const candidateProfile = { skills: skills, years_experience: experience };
+
+    showLoading();
+    try {
+        const response = await fetch(`${API_BASE}/find-jobs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                candidate_profile: candidateProfile,
+                keywords: keywordsList,
+                location: location,
+                remote: remote,
+                top_n: topN
+            })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        const data = await response.json();
+        displayResult('jobs-result', 'jobs-content', data);
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function prepareInterview() {
+    const jobInfoText = document.getElementById('job-info').value.trim();
+    const candidateInfoText = document.getElementById('candidate-info-interview').value.trim();
+    if (!jobInfoText || !candidateInfoText) { alert('⚠️ Por favor, preencha ambos os campos com JSON válido'); return; }
+    try {
+        const jobInfo = JSON.parse(jobInfoText);
+        const candidateInfo = JSON.parse(candidateInfoText);
+        showLoading();
+        const response = await fetch(`${API_BASE}/prepare-interview`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_info: jobInfo, candidate_info: candidateInfo })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        const data = await response.json();
+        displayResult('interview-result', 'interview-content', data.preparation);
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function generateCoverLetter() {
+    const candidateInfoText = document.getElementById('candidate-info-letter').value.trim();
+    const jobInfoText = document.getElementById('job-info-letter').value.trim();
+    if (!candidateInfoText || !jobInfoText) { alert('⚠️ Por favor, preencha ambos os campos com JSON válido'); return; }
+    try {
+        const candidateInfo = JSON.parse(candidateInfoText);
+        const jobInfo = JSON.parse(jobInfoText);
+        showLoading();
+        const response = await fetch(`${API_BASE}/generate-cover-letter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ candidate_info: candidateInfo, job_info: jobInfo })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        const data = await response.json();
+        const letterContent = document.getElementById('letter-content');
+        letterContent.innerHTML = data.cover_letter.replace(/\n/g, '<br>');
+        document.getElementById('letter-result').classList.remove('hidden');
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function generateTailoredResume() {
+    const candidateInfoText = document.getElementById('candidate-info-tailor').value.trim();
+    const jobInfoText = document.getElementById('job-info-tailor').value.trim();
+    if (!candidateInfoText || !jobInfoText) { alert('⚠️ Por favor, preencha ambos os campos com JSON válido'); return; }
+    try {
+        const candidateInfo = JSON.parse(candidateInfoText);
+        const jobInfo = JSON.parse(jobInfoText);
+        showLoading();
+        const response = await fetch(`${API_BASE}/generate-resume`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ candidate_info: candidateInfo, job_info: jobInfo })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        const data = await response.json();
+        const tailorContent = document.getElementById('tailor-content');
+        tailorContent.innerHTML = data.resume.replace(/\n/g, '<br>');
+        document.getElementById('tailor-result').classList.remove('hidden');
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function generateRecruiterMessage() {
+    const candidateInfoText = document.getElementById('candidate-info-message').value.trim();
+    const jobInfoText = document.getElementById('job-info-message').value.trim();
+    if (!candidateInfoText || !jobInfoText) { alert('⚠️ Por favor, preencha ambos os campos com JSON válido'); return; }
+    try {
+        const candidateInfo = JSON.parse(candidateInfoText);
+        const jobInfo = JSON.parse(jobInfoText);
+        showLoading();
+        const response = await fetch(`${API_BASE}/generate-recruiter-message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ candidate_info: candidateInfo, job_info: jobInfo })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        const data = await response.json();
+        document.getElementById('message-content').textContent = data.message;
+        document.getElementById('message-result').classList.remove('hidden');
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function saveApplication() {
+    const jobInfoText = document.getElementById('save-job-info').value.trim();
+    if (!jobInfoText) { alert('⚠️ Por favor, informe a vaga em JSON'); return; }
+    try {
+        const jobInfo = JSON.parse(jobInfoText);
+        const matchScoreVal = document.getElementById('save-match-score').value;
+        const notes = document.getElementById('save-notes').value.trim();
+        showLoading();
+        const response = await fetch(`${API_BASE}/applications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                job_info: jobInfo,
+                match_score: matchScoreVal ? parseInt(matchScoreVal) : null,
+                notes: notes || null
+            })
+        });
+        if (!response.ok) throw new Error('Erro na requisição');
+        alert('✅ Candidatura salva!');
+        document.getElementById('save-job-info').value = '';
+        document.getElementById('save-match-score').value = '';
+        document.getElementById('save-notes').value = '';
+        loadApplications();
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteApplication(id) {
+    if (!confirm('Remover essa candidatura salva?')) return;
+    try {
+        await fetch(`${API_BASE}/applications/${id}`, { method: 'DELETE' });
+        loadApplications();
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    }
+}
+
+async function loadApplications() {
+    const listEl = document.getElementById('saved-list');
+    try {
+        const response = await fetch(`${API_BASE}/applications`);
+        const data = await response.json();
+        const apps = data.applications || [];
+        if (apps.length === 0) {
+            listEl.innerHTML = '<p style="color:var(--slate); font-size:13px;">Nenhuma candidatura salva ainda.</p>';
+            return;
+        }
+        listEl.innerHTML = apps.map(app => {
+            const job = app.job_info || {};
+            const date = app.saved_at ? new Date(app.saved_at).toLocaleDateString('pt-BR') : '';
+            const score = app.match_score != null ? `${app.match_score}% de aderência` : '';
+            return `<div style="border:1px solid var(--hairline); padding:14px; margin-bottom:10px; border-radius:2px;">
+                <strong>${job.title || 'Vaga'}</strong> — ${job.company || ''}<br>
+                <span style="font-size:12px; color:var(--slate);">${date} ${score ? '· ' + score : ''}</span>
+                ${app.notes ? `<p style="font-size:13px; margin:8px 0 0;">${app.notes}</p>` : ''}
+                <button class="copy-btn" style="margin-top:8px;" onclick="deleteApplication('${app.id}')">🗑 Remover</button>
+            </div>`;
+        }).join('');
+    } catch (error) {
+        listEl.innerHTML = '<p style="color:var(--danger); font-size:13px;">Erro ao carregar candidaturas salvas.</p>';
+    }
+}
+
+document.querySelector('.nav-btn[data-tab="saved"]').addEventListener('click', loadApplications);
+
+window.addEventListener('load', async () => {
+    try {
+        const response = await fetch(`${API_BASE}/health`);
+        if (response.ok) console.log('✅ API conectada com sucesso!');
+    } catch (error) {
+        console.warn('⚠️ API não está acessível.');
+    }
+});
+</script>
+</body>
+</html>
